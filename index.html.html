@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Book - TEC</title>
+
+  <style>
+    
+
+
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-image: url('diseño.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #000;
+      text-shadow: 1px 1px 4px #fff;
+    }
+
+
+    .busqueda {
+      margin: 30px auto;
+    }
+
+
+    .resultado-busqueda {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      margin: 20px auto;
+      width: 300px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      text-align: left;
+      font-size: 15px;
+    }
+
+    #marcador {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: red;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      z-index: 10;
+    }
+
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      border-radius: 20px;
+      margin: 40px;
+    }
+
+    .image-top {
+      margin-bottom: 10px;
+    }
+
+    .image-bottom {
+      margin-top: 10px;
+    }
+
+    img {
+      width: 600px;
+      max-width: 95%;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 240px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      text-align: left;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar h2 {
+      margin-top: 0;
+      font-size: 22px;
+      color: #333;
+    }
+
+    .sidebar h3 {
+      margin: 12px 0 4px;
+      font-size: 16px;
+      color: #444;
+    }
+
+    .sidebar a {
+      display: block;
+      color: #0066cc;
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: color 0.3s;
+    }
+
+    .sidebar a:hover {
+      color: #004499;
+    }
+
+    .toggle-button {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 50px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    @media screen and (max-width: 768px) {
+      .sidebar {
+        top: auto;
+        bottom: 80px;
+        right: 20px;
+        transform: translateY(200%);
+        z-index: 999;
+      }
+
+      .sidebar.active {
+        transform: translateY(0%);
+      }
+
+      .toggle-button {
+        display: block;
+      }
+    }
+
+    #sugerencias {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 200px;
+      display: none;
+      margin-top: 2px;
+      z-index: 10;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    #sugerencias div {
+      padding: 5px;
+      cursor: pointer;
+    }
+    #sugerencias div:hover {
+      background-color: #eee;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div style="height: 100px; position: relative">
+    <a href="https://biblioteca.tec.mx/inicio" target="_blank">
+      <img src="logo_biblioteca.png" alt="Logo Biblioteca TEC" style="width: 300px; float:left">
+    </a>
+    <h1 style="position: absolute; top: 50%; left: 45%">Book - TEC</h1>
+  </div>
+  <!-- NUEVO BUSCADOR FUNCIONAL -->
+  <div class="busqueda" style="clear: both;">
+    <input type="text" id="busquedaInput" placeholder="Buscar libro, palabra clave...">
+    <button onclick="buscarElemento()">Buscar</button>
+        <div id="sugerencias"></div>
+
+  </div>
+
+  <div id="resultado" class="resultado-busqueda"></div>
+  <div id="marcador"></div>
+
+  <div class="image-container">
+    <div class="image-top">
+      <img src="segundo_piso.PNG" alt="Mapa Segundo Piso">
+    </div>
+    <div class="image-bottom">
+      <img src="primer_piso.PNG" alt="Mapa Primer Piso">
+    </div>
+  </div>
+
+  <div class="sidebar" id="sidebar">
+    <h2>Sitios</h2>
+    <h3>Zona VR</h3>
+    <a href="https://biblioteca.tec.mx/inicio/zonavr" target="_blank">Ve VR</a>
+    <h3>Reservaciones</h3>
+    <a href="https://outlook.office365.com/book/BibliotecaCEMProfesional@tecmx.onmicrosoft.com/?ae=true&login_hint" target="_blank">Reserva tu sala</a>
+  </div>
+
+  <button class="toggle-button" onclick="toggleSidebar()">☰ Sitios</button>
+
+  <script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('active');
+  }
+
+
+  const baseDatos = {
+    "Sala de estudio colaborativa LC1": {
+      descripcion: "Sala de estudio colaborativa de 3 a 5 personas, contiene una pantalla.",
+      piso: "1",
+      x: 410,
+      y: 605
+    },
+    "Sala de estudio colaborativa LC2": { 
+      descripcion: "Sala de estudio colaborativa de 4 a 8 personas, contiene un pizarrón y una pantalla.",
+      piso: "1",
+      x: 360,
+      y: 605
+    },
+    "Sala de estudio colaborativa LC3": {
+      descripcion: "Sala de estudio colaborativa de 4 a 8 personas, contiene un pizarrón y una pantalla.",
+      piso: "1",
+      x: 305,
+      y: 605
+    },
+    "Sala de estudio colaborativa LC4": {
+      descripcion: "Sala de estudio colaborativa de 3 a 5 personas, contiene una pantalla.",
+      piso: "1",
+      x: 255,
+      y: 605
+    },
+    "Sala de estudio individual LC5": {
+      descripcion: "Sala de estudio individual para 1 a 3 personas.",
+      piso: "1",
+      x: 490,
+      y: 605
+    },
+    "Sala de estudio colaborativa PA1": {
+      descripcion: "Sala de estudio colaborativa de 4 a 10 personas, contiene un pizarrón.",
+      piso: "2",
+      x: 50,
+      y: 475
+    },
+    "Sala de estudio colaborativa PA2": {
+      descripcion: "Sala de estudio colaborativa de 4 a 10 personas, contiene un pizarrón.",
+      piso: "2",
+      x: 50,
+      y: 440
+    },
+    
+    "Sala de estudio colaborativa Pa3": {
+      descripcion: "Sala de estudio colaborativa de 4 a 10 personas, contiene un pizarrón.",
+      piso: "2",
+      x: 50,
+      y: 410
+    },
+
+    "Sala de estudio colaborativa Pa4": {
+      descripcion: "Sala de estudio colaborativa de 4 a 10 personas, contiene un pizarrón.",
+      piso: "2",
+      x: 50,
+      y: 375
+    },
+      "Sala de estudio colaborativa Pa5": {
+      descripcion: "Sala de estudio colaborativa de 4 a 10 personas, contiene un pizarrón.",
+      piso: "2",
+      x: 50,
+      y: 345
+    },
+
+    
+    "Sala de estudio colaborativa Pa6": {
+      descripcion: "Sala de estudio colaborativa de 4 a 10 personas, contiene un pizarrón.",
+      piso: "2",
+      x: 50,
+      y: 310   
+    },
+  };
+
+  function buscarElemento() {
+    const input = document.getElementById('busquedaInput').value.trim().toLowerCase();
+    const resultadoDiv = document.getElementById('resultado');
+    const marcador = document.getElementById('marcador');
+    const imagen = document.querySelector('.image-top img');
+
+    let encontrado = null;
+    let claveReal = "";
+
+    for (let clave in baseDatos) {
+      if (clave.toLowerCase() === input) {
+        encontrado = baseDatos[clave];
+        claveReal = clave;
+        break;
+      }
+    }
+
+    if (encontrado) {
+      resultadoDiv.innerHTML = `
+        <strong>${claveReal}</strong><br>
+        <strong>Descripción:</strong> ${encontrado.descripcion}<br>
+        <strong>Piso:</strong> ${encontrado.piso}
+      `;
+
+      const rect = imagen.getBoundingClientRect();
+      const offsetX = rect.left + window.scrollX;
+      const offsetY = rect.top + window.scrollY;
+
+      marcador.style.left = (offsetX + encontrado.x) + 'px';
+      marcador.style.top = (offsetY + encontrado.y) + 'px';
+      marcador.style.display = 'block';
+    } else {
+      resultadoDiv.innerHTML = `<span style="color: red;"><strong>No se encontró:</strong> "${input}"</span>`;
+      marcador.style.display = 'none';
+    }
+  }
+  
+  // Autocompletado
+  const sugerencias = Object.keys(baseDatos);
+  const input = document.getElementById("busquedaInput");
+  const contenedor = document.getElementById("sugerencias");
+
+  input.addEventListener("input", function () {
+    const texto = this.value.toLowerCase().trim();
+    contenedor.innerHTML = "";
+    if (!texto) {
+      contenedor.style.display = "none";
+      return;
+    }
+
+    const filtradas = sugerencias.filter(item => item.toLowerCase().includes(texto));
+    if (filtradas.length === 0) {
+      contenedor.style.display = "none";
+      return;
+    }
+
+    filtradas.forEach(item => {
+      const div = document.createElement("div");
+      div.textContent = item;
+      div.addEventListener("click", function () {
+        input.value = item;
+        contenedor.style.display = "none";
+        buscarElemento();  
+      });
+      contenedor.appendChild(div);
+    });
+
+    contenedor.style.display = "block";
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!contenedor.contains(e.target) && e.target !== input) {
+      contenedor.style.display = "none";
+    }
+  });
+
+
+
+
+
+
+
+</script>
+
+
+
